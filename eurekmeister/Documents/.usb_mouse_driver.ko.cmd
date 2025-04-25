@@ -1,0 +1,1 @@
+savedcmd_/home/eurekmeister/Documents/usb_mouse_driver.ko := aarch64-linux-gnu-ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T arch/arm64/module.lds -o /home/eurekmeister/Documents/usb_mouse_driver.ko /home/eurekmeister/Documents/usb_mouse_driver.o /home/eurekmeister/Documents/usb_mouse_driver.mod.o /home/eurekmeister/Documents/.module-common.o

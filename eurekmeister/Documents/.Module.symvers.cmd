@@ -1,0 +1,1 @@
+savedcmd_/home/eurekmeister/Documents/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/eurekmeister/Documents/Module.symvers -T /home/eurekmeister/Documents/modules.order -i Module.symvers -e 
