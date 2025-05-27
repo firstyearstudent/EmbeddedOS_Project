@@ -1,1 +1,1 @@
-savedcmd_/home/eurekmeister/Documents/modules.order := {   echo /home/eurekmeister/Documents/usb_mouse_driver.o; :; } > /home/eurekmeister/Documents/modules.order
+savedcmd_/home/manhquan/workspace/EmbeddedOS_Project/modules.order := {   echo /home/manhquan/workspace/EmbeddedOS_Project/usb_mouse_driver.o; :; } > /home/manhquan/workspace/EmbeddedOS_Project/modules.order

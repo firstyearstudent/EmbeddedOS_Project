@@ -1,1 +1,1 @@
-savedcmd_/home/eurekmeister/Documents/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/eurekmeister/Documents/Module.symvers -T /home/eurekmeister/Documents/modules.order -i Module.symvers -e 
+savedcmd_/home/manhquan/workspace/EmbeddedOS_Project/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/manhquan/workspace/EmbeddedOS_Project/Module.symvers -T /home/manhquan/workspace/EmbeddedOS_Project/modules.order -i Module.symvers -e 

@@ -1,1 +1,1 @@
-savedcmd_/home/eurekmeister/Documents/usb_mouse_driver.mod := printf '%s\n'   usb_mouse_driver.o | awk '!x[$$0]++ { print("/home/eurekmeister/Documents/"$$0) }' > /home/eurekmeister/Documents/usb_mouse_driver.mod
+savedcmd_/home/manhquan/workspace/EmbeddedOS_Project/usb_mouse_driver.mod := printf '%s\n'   usb_mouse_driver.o | awk '!x[$$0]++ { print("/home/manhquan/workspace/EmbeddedOS_Project/"$$0) }' > /home/manhquan/workspace/EmbeddedOS_Project/usb_mouse_driver.mod
