@@ -1,106 +1,47 @@
-#!/usr/bin/python3
 import pyudev
-import subprocess
-import logging
-from datetime import datetime
 
-# ---- Cấu hình hệ thống ----
-LOG_FILE = "/var/log/usb_classifier.log"
-MOUNT_BASE = "/mnt/usb"
-WHITELIST_VENDORS = ["0781", "090c"]  # SanDisk, Silicon Motion
+def load_usb_ids(usb_ids_path="/usr/local/share/usb.ids"):
+    vendors = {}
+    current_vendor = None
+    with open(usb_ids_path, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            if line.startswith("#") or not line.strip():
+                continue
+            if not line.startswith("\t"):
+                parts = line.strip().split(None, 1)
+                if len(parts) == 2 and len(parts[0]) == 4:
+                    current_vendor = parts[0].lower()
+                    vendors[current_vendor] = {"name": parts[1], "products": {}}
+            else:
+                parts = line.strip().split(None, 1)
+                if current_vendor and len(parts) == 2 and len(parts[0]) == 4:
+                    product_id = parts[0].lower()
+                    vendors[current_vendor]["products"][product_id] = parts[1]
+    return vendors
 
-# ---- Thiết lập logging ----
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+def lookup_usb(vendors, vendor_id, product_id):
+    vendor_id = vendor_id.lower()
+    product_id = product_id.lower()
+    vendor = vendors.get(vendor_id)
+    if not vendor:
+        return None, None
+    product = vendor["products"].get(product_id)
+    return vendor["name"], product
 
-def log_event(device, classification):
-    """Ghi log sự kiện USB"""
-    vendor = device.get('ID_VENDOR_ID', 'unknown')
-    product = device.get('ID_MODEL_ID', 'unknown')
-    serial = device.get('ID_SERIAL_SHORT', 'unknown')
-    
-    logging.info(
-        f"Device {device.device_node}: "
-        f"Vendor={vendor}, Product={product}, "
-        f"Serial={serial}, Class={classification}"
-    )
-
-def classify_device(device):
-    """Phân loại thiết bị với thuật toán cải tiến"""
-    usb_class = device.get('ID_USB_INTERFACES', '').lower()
-    vendor = device.get('ID_VENDOR_ID', '')
-    
-    # Kiểm tra whitelist
-    if vendor not in WHITELIST_VENDORS:
-        return "blocked"
-    
-    # Phân loại theo class code
-    if '08' in usb_class:
-        return "storage"
-    elif '03' in usb_class:
-        return "hid"
-    elif '01' in usb_class:
-        return "audio"
-    elif '0e' in usb_class:
-        return "video"
-    
-    # Phân loại dự phòng bằng USB ID database
-    try:
-        output = subprocess.check_output(
-            f"lsusb -d {vendor}:{product}",
-            shell=True,
-            text=True
-        )
-        if 'storage' in output.lower():
-            return "storage"
-        elif 'keyboard' in output.lower() or 'mouse' in output.lower():
-            return "hid"
-    except:
-        pass
-    
-    return "unknown"
-
-def handle_device(device, classification):
-    """Xử lý thiết bị theo phân loại"""
-    dev_node = device.device_node
-    
-    if classification == "blocked":
-        logging.warning(f"Blocked unauthorized device: {dev_node}")
-        return
-        
-    try:
-        if classification == "storage":
-            mount_point = f"{MOUNT_BASE}_{device.get('ID_VENDOR_ID')}_{device.get('ID_MODEL_ID')}"
-            subprocess.run([
-                "mount", 
-                "-o", "uid=1000,gid=1000,noexec", 
-                dev_node, 
-                mount_point
-            ], check=True)
-            
-        elif classification == "hid":
-            subprocess.run([
-                "modprobe", 
-                "usbhid"
-            ], check=True)
-            
-        log_event(device, classification)
-        
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Failed to handle {dev_node}: {str(e)}")
-
-# ---- Main Execution ----
 if __name__ == "__main__":
+    usb_vendors = load_usb_ids()
     context = pyudev.Context()
     monitor = pyudev.Monitor.from_netlink(context)
-    monitor.filter_by('usb')
-    
-    logging.info("USB Classifier Daemon Started")
-    
+    monitor.filter_by(subsystem='usb', device_type='usb_device')
+
+    print("Đang theo dõi thiết bị USB...")
+
     for device in iter(monitor.poll, None):
         if device.action == 'add':
-            classification = classify_device(device)
-            handle_device(device, classification)
+            vendor_id = device.get('ID_VENDOR_ID')
+            product_id = device.get('ID_MODEL_ID')
+            if vendor_id and product_id:
+                vendor_name, product_name = lookup_usb(usb_vendors, vendor_id, product_id)
+                print(f"Thiết bị mới: {vendor_name or vendor_id} - {product_name or product_id}")
+            else:
+                print("Thiết bị USB mới không xác định được ID.")
